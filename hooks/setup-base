@@ -1,0 +1,13 @@
+apt-get update
+apt-get install build-essential
+
+sudo -u workshop install --directory /home/workshop/actions-runner
+sudo -u workshop tar --extract --keep-old-files --file "$SDK/actions-runner.tar.gz" --directory /home/workshop/actions-runner
+
+cat <<EOF >/etc/profile.d/github-runner.sh
+export PATH="$SDK/bin:\$PATH"
+EOF
+
+# shellcheck source=/dev/null
+. /etc/profile.d/github-runner.sh
+github-runner completion bash > /etc/bash_completion.d/github-runner

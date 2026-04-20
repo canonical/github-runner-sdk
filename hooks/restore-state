@@ -1,0 +1,5 @@
+cache="$(sudo -u workshop bash -lc 'printf %s "${XDG_CACHE_HOME:-$HOME/.cache}"')"
+sudo -u workshop install --directory --mode 700 -- "$cache"
+if [ -d "$SDK_STATE_DIR/github-runner" ]; then
+  cp --archive -- "$SDK_STATE_DIR/github-runner" "$cache/"
+fi

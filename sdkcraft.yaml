@@ -1,0 +1,69 @@
+name: github-runner
+adopt-info: actions-runner
+summary: Run GitHub Actions inside a local workshop
+description: |
+  This SDK converts a workshop into a just-in-time runner for GitHub workflow
+  jobs. It packages the official GitHub Actions Runner client with a helper
+  script that automates registration, manages OAuth authentication, and handles
+  runner lifecycle operations.
+  
+  ## Key components
+  
+  - `actions-runner`: The official GitHub Actions Runner client (v2.325.0),
+    providing the same runtime environment that GitHub uses for self-hosted
+    runners. The version is determined by the SDK release, not the base image.
+  - `github-runner`: A helper script that automates runner registration with
+    GitHub repositories or organizations, manages OAuth authentication via a
+    GitHub App, and configures runner labels and settings.
+  - Tool cache: Persistent storage at `~/actions-runner/_work/_tool` that
+    preserves downloaded tools and dependencies across workshop updates,
+    avoiding repeated downloads of setup actions like `setup-python`.
+  
+  The SDK focuses on providing the runner environment itself. GitHub-hosted
+  runners include extensive preinstalled software (compilers, databases, various
+  language runtimes, etc.), but these are **not** included by default. If your
+  workflows require specific tools, install them as part of the workflow (many
+  actions like `setup-python` provide caching), or add them as workshop SDKs for
+  tools needed during development as well as CI.
+  
+  ## Setup actions
+  
+  On launch, the SDK:
+  
+  - Extracts the official Runner client to `~/actions-runner`.
+  - Adds the `github-runner` helper script to `PATH` for easy invocation.
+  - Configures the tool cache mount plug to persist downloads from setup actions
+    across workshop updates.
+  
+  No runner registration or authorization happens automatically; you control when
+  to start the runner and which repository or organization it connects to.
+license: MIT
+platforms:
+  ubuntu@24.04:amd64:
+  ubuntu@22.04:amd64:
+
+parts:
+  actions-runner:
+    plugin: nil
+    build-packages:
+      - libicu-dev
+    override-pull: |
+      VERSION=$(cat "$CRAFT_PROJECT_DIR/VERSION")
+      craftctl set version="$VERSION"
+      git clone --depth 1 --branch "v${VERSION}" https://github.com/actions/runner.git .
+    override-build: |
+      cd src
+      ./dev.sh layout Release
+      ./dev.sh package Release
+
+      install --mode 644 ../_package/actions-runner-*.tar.gz "${CRAFT_PART_INSTALL}/actions-runner.tar.gz"
+  github-runner:
+    plugin: go
+    source: .
+    build-snaps:
+      - go/1.24/stable
+
+plugs:
+  tool-cache:
+    interface: mount
+    workshop-target: /home/workshop/actions-runner/_work/_tool

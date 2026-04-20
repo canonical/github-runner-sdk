@@ -1,97 +1,9 @@
-<!--
-# SDK README Template for Workshop
+# GitHub Runner SDK for Workshop
 
-OVERALL DESIGN (for sdkcraft.yaml description field):
-
-The sdkcraft.yaml `description` field should match the README overview
-paragraph so it can be reused in `sdk info` output. Write it as a short YAML
-multiline string — no sub-headings, no bullet lists. Follow this pattern:
-
-description: |
-  This SDK provides [toolchain/runtime] for [purpose].
-  [Key resources] are persisted on the host to speed up [builds/installs]
-  across workshop updates.
-
-Examples from approved SDKs:
-
-  # go
-  description: |
-    This SDK provides the official Go toolchain for efficient Go
-    development. Module downloads are persisted on the host to speed up builds
-    across workshop updates, and Go environment settings are preserved between
-    workshop updates.
-
-  # node
-  description: |
-    This SDK provides a complete Node.js development environment built from
-    source, with Corepack enabled for flexible package manager choice. Package
-    manager caches are persisted on the host to speed up dependency
-    installations across workshop updates.
-
-README TEMPLATE INSTRUCTIONS:
-
-1. Copy this file to your SDK repository directory as README.md
-2. Replace all placeholders in [SQUARE BRACKETS] with your actual content;
-   replace XYZ, FOO, BAR with real product names
-3. Remove any sections that don't apply to your SDK for simplicity
-4. Delete this comment block before publishing
-5. Test all command examples before publishing
-
-Focus on the SDK's behavior, not the target library/framework documentation.
-Link to upstream docs for product-related specifics.
-
-Do NOT include "Installed components" or "Platforms, channels, versions"
-sections. Component details should be folded into the overview paragraph.
-Channel information belongs in `sdk info`, not the README.
-
-SECTION GUIDE:
-
-Title and description:
-Use the format "[Software Name] SDK for Workshop". Answer: What is it?
-What does it do? Who is it for? Keep it 2-3 compound sentences long.
-Focus on how the SDK affects the user's environment, not on marketing
-language. Avoid phrases like "focus on writing and testing code".
-
-Reference workshop:
-Provide an inline minimal workshop.yaml.
-Explain briefly what the reference demonstrates.
-
-Using the SDK:
-Step-by-step: prerequisite SDKs, project layout, launch, primary workflow.
-All commands must be tested and working. Keep code examples clear about
-whether they run on the host or inside the workshop.
-
-Plugs and slots:
-Document each plug: interface, target/source, purpose.
-Include mounts and persistence details here, and document any tunnels
-alongside other plug types.
-If the SDK relies on resources exposed by other SDKs, say this explicitly.
-Do the same for slots if SDK exposes resources to others.
-Use "workshop updates" (not "restarts" or "sessions") when describing
-what mounts survive.
-
-Documentation and guidance:
-Link to upstream docs.
-
-Community and support:
-Link to forums, support channels, Code of Conduct.
-
-Contributions:
-Link to contribution guides, CONTRIBUTING.md.
-
-License and copyright:
-Include copyright holder, year, license name and link.
-Make sure to include all shipped components.
--->
-
-# [Software Name] SDK for Workshop
-
-[Brief description of what this SDK provides. Should closely match the
-sdkcraft.yaml description. Focus on how the SDK affects the development
-environment: what toolchain/runtime it provides, what it persists on the host,
-and any notable features. Example: "A development environment for Go projects.
-It provides the official Go toolchain, manages module caches via persistent
-mounts, and preserves Go environment settings across workshop updates."]
+A just-in-time runner for GitHub Actions that runs workflow jobs inside a local
+workshop. This SDK simplifies local testing of GitHub workflows, enables
+interactive debugging of failed jobs, and allows testing with custom hardware
+without managing persistent runner infrastructure.
 
 ---
 
@@ -101,19 +13,15 @@ A minimal workshop:
 
 ```yaml
 # workshop.yaml
-name: [workshop-name]
-base: ubuntu@[version]  # e.g., ubuntu@24.04
+name: ci
+base: ubuntu@24.04
 sdks:
-  - name: [sdk-name]
-    channel: [channel]  # e.g., 1.24/stable
-
-actions:
-  [action-name]: |
-    [command]
+  - name: github-runner
+    channel: 24.04/edge
 ```
 
-[One sentence explaining what this demonstrates, e.g., "This demonstrates a
-basic Go build workflow with persistent module caching."]
+This provides a basic runner environment. Add additional SDKs as needed for
+your workflows (e.g., `docker` for container operations, `go` for Go projects).
 
 ---
 
@@ -121,66 +29,173 @@ basic Go build workflow with persistent module caching."]
 
 ### Prerequisites, project layout
 
-1. [List prerequisites, e.g., "This relies on the `uv` SDK for venv."]
-2. [Suggest expected project directory structure, including source code layout
-   and setup steps needed:]
+1. No prerequisite SDKs are required, but you may want to add others based on
+   your workflow needs (e.g., `docker`, `go`, `node`).
+2. Admin-level permissions are required on the target repository to add a
+   runner. Users without admin rights can fork the repository and test
+   workflows in the fork. Adding a runner to an organization doesn't require
+   admin rights on the organization itself, but grants access to organization
+   secrets—proceed with caution.
+3. Your project with GitHub Actions workflows should be in your project
+   directory:
 
    ```bash
-   [command to clone or prepare sources]
+   git clone <YOUR_REPO_URL>
    ```
 
-3. [Describe what side effects may happen during launch and refresh.]
+### Authorization
 
-### [Primary workflow task, e.g., "Build the project"]
+On first run, the `github-runner` script requests authorization using a
+one-time code. This authorization is mediated by a GitHub App provided by the
+Workshop team to limit SDK access to only the necessary repositories.
 
-Once the workshop is ready:
+To grant access:
+
+1. Navigate to the [GitHub App for
+   github-runner](https://github.com/apps/test-app-jonathan-conder-1) and
+   install it.
+2. Configure which repositories or organizations the App can access. This can
+   be changed at any time.
+3. If the workshop or host machine is compromised, uninstall the App to revoke
+   access immediately.
+
+For individuals, install the App on your personal account and grant access to
+the required repositories.
+
+For organizations, install the App on the organization. After adding a runner
+to the organization, workflows can use it even if the App is denied access to
+the specific repository. Alternatively, add the runner to individual
+repositories within the organization and grant the App access to those
+repositories.
+
+The SDK doesn't share information with Canonical or any third party (apart from
+GitHub). If you prefer a different authentication mechanism, export the
+`GITHUB_TOKEN` environment variable inside the workshop—the `github-runner`
+script will use it if available.
+
+### Start the runner
+
+Once the workshop is ready and authorization is configured:
 
 ```bash
-[workshop run]
-[commands to perform the primary task]
+workshop exec ci github-runner --label=workshop <OWNER>[/<REPO>]
 ```
 
-[Explain where outputs go and how they persist across workshop updates.]
+Replace `<OWNER>/<REPO>` with the full repository name (e.g.,
+`canonical/workshop`). If omitted, the script tries to detect this from the
+local repository. For organization-level runners, provide only the organization
+name (e.g., `canonical`).
 
-### [Secondary workflow task, e.g., "Test and run"]
+The `--label` option adds a label to distinguish this runner from GitHub-hosted
+runners and other self-hosted runners. Use `--help` to see all available
+options.
 
-From within the workshop shell:
+After a few seconds, the runner will be ready to accept jobs.
+
+### Configure workflows to use the runner
+
+Add the runner label to the `runs-on` option in your workflow. We recommend
+making this configurable to avoid repeatedly editing the workflow:
+
+```yaml
+# .github/workflows/test.yaml
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      runner:
+        description: Where to run the job
+        type: choice
+        required: true
+        options: [ubuntu-latest, workshop]
+        default: ubuntu-latest
+
+jobs:
+  test:
+    runs-on: ["${{ inputs.runner || 'ubuntu-latest' }}"]
+    steps:
+      - uses: actions/checkout@v4
+      - run: make test
+```
+
+Commit the updated workflow, find it in the Actions tab of the repository, and
+select "Run workflow" with the runner set to `workshop`.
+
+The Runner client prints logs when jobs start and finish. Full logs remain
+viewable on GitHub.
+
+### Running multiple jobs in parallel
+
+The Runner client runs one job at a time. To run several jobs in parallel, use
+multiple workshops:
 
 ```bash
-workshop shell
-[test or run commands]
+mkdir -p .workshop
+mv workshop.yaml .workshop/ci.yaml
+sed 's/name: ci/name: ci2/' <.workshop/ci.yaml >.workshop/ci2.yaml
+workshop launch ci2
+workshop exec ci2 github-runner --label=workshop
 ```
 
-[Brief explanation of what this achieves.]
+### Ensuring clean state between jobs
+
+The Runner client doesn't clean up after itself, which aids debugging but may
+cause issues for some workflows. To ensure a clean state, refresh the workshop
+after each job:
+
+```bash
+while workshop exec ci github-runner --label=workshop --once; do
+  workshop refresh ci
+done
+```
+
+### Branch-conditional runners
+
+For quick iteration, make the runner conditional on the branch name:
+
+```yaml
+# .github/workflows/test.yaml
+on:
+  push:
+    branches:
+      - main
+      - workshop-runner/**
+
+jobs:
+  test:
+    runs-on: ["${{ startsWith(github.ref_name, 'workshop-runner/') && 'workshop' || 'ubuntu-latest' }}"]
+    steps:
+      - uses: actions/checkout@v4
+      - run: make test
+```
+
+Push to a `workshop-runner/*` branch to automatically use your local runner.
+
+### Important notes
+
+- Take care with logging: some actions may leak sensitive information about the
+  runner (e.g., IP address).
+- In rare cases (like a power outage during registration), runners can remain
+  attached to the repository indefinitely. Remove these manually in the
+  repository or organization settings.
+- To inspect logs and files after a failed run, enter the workshop shell after
+  the job completes and navigate to `~/actions-runner/_work`.
 
 ---
 
 ## Plugs (resources this SDK consumes)
 
-### `[plug-name]`
+### `tool-cache`
 
 - Interface: `mount`
-- Workshop target: `[/path/inside/workshop]`
-- Purpose: [What this persists between workshop updates.]
-
-### `[plug-name]`
-
-- Interface: `gpu`
-- Purpose: Grants access to [AMD/NVIDIA] GPU hardware on the host.
-
--- OR --
-
-This SDK doesn't define any plugs.
+- Workshop target: `/home/workshop/actions-runner/_work/_tool`
+- Purpose: Persists tools downloaded by setup actions (e.g., `setup-python`,
+  `setup-node`) between workshop updates, avoiding repeated downloads and
+  improving job startup time.
 
 ## Slots (resources this SDK provides)
-
-### `[slot-name]`
-
-- Interface: `mount`
-- Workshop source: `[/path/inside/workshop]`
-- Purpose: [What resource this exposes to other SDKs]
-
--- OR --
 
 This SDK doesn't define any slots.
 
@@ -188,16 +203,19 @@ This SDK doesn't define any slots.
 
 ## Documentation and guidance
 
-- [[XYZ] official documentation]([upstream-docs-url])
-- [[XYZ] best practices]([public-website-url])
+- [GitHub Actions documentation](https://docs.github.com/en/actions)
+- [Self-hosted runners](https://docs.github.com/en/actions/hosting-your-own-runners/managing-self-hosted-runners/about-self-hosted-runners)
+- [Just-in-time runners](https://docs.github.com/en/actions/security-for-github-actions/security-guides/security-hardening-for-github-actions#using-just-in-time-runners)
+- [Official Runner repository](https://github.com/actions/runner)
+- [Workshop documentation](https://canonical-workshop.readthedocs-hosted.com/latest/)
 
 ---
 
 ## Community and support
 
-- [XYZ] community forum: [Link to upstream forum/community]
-- Please review our [Code of Conduct](https://ubuntu.com/community/ethos/code-of-conduct)
-  before participating.
+- GitHub Actions community: [GitHub Community Discussions](https://github.com/orgs/community/discussions/categories/actions)
+- Workshop forum: [Workshop Discourse](https://discourse.canonical.com/c/engineering/workshops/34)
+- Please review our [Code of Conduct](https://ubuntu.com/community/ethos/code-of-conduct) before participating.
 
 ---
 
@@ -206,13 +224,14 @@ This SDK doesn't define any slots.
 All contributions, including code, documentation updates, and issue reports,
 are welcome!
 
-- See [CONTRIBUTING]([public-github-url]) for guidelines.
-- Open issues or pull requests on the [official repository]([repo-url]).
+- See `CONTRIBUTING.md` for guidelines.
+- Open issues or pull requests on the official repository.
 
 ---
 
 ## License and copyright
 
-Copyright [START YEAR] [COPYRIGHT HOLDER].
+Copyright 2025 Canonical Ltd.
 
-[Include any required claims, information, and disclaimers for your license.]
+This SDK is licensed under the [MIT License](https://opensource.org/licenses/MIT),
+the same license as [GitHub Actions Runner](https://github.com/actions/runner/blob/main/LICENSE).

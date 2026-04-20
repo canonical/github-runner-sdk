@@ -1,0 +1,11 @@
+if [ ! -x /home/workshop/actions-runner/run.sh ]; then
+  workshopctl set-health error 'actions-runner not found'
+  exit
+fi
+
+if ! sudo -u workshop bash -lc 'command -v github-runner' >/dev/null; then
+  workshopctl set-health error 'github-runner not found'
+  exit
+fi
+
+workshopctl set-health okay
