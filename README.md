@@ -17,7 +17,7 @@ name: ci
 base: ubuntu@24.04
 sdks:
   - name: github-runner
-    channel: 24.04/edge
+    channel: latest/stable
 ```
 
 This provides a basic runner environment. Add additional SDKs as needed for
@@ -231,7 +231,7 @@ are welcome!
 
 ## License and copyright
 
-Copyright 2025 Canonical Ltd.
+Copyright 2025-2026 Canonical Ltd.
 
 This SDK is licensed under the [MIT License](https://opensource.org/licenses/MIT),
 the same license as [GitHub Actions Runner](https://github.com/actions/runner/blob/main/LICENSE).
