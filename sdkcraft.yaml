@@ -6,9 +6,9 @@ description: |
   jobs. It packages the official GitHub Actions Runner client with a helper
   script that automates registration, manages OAuth authentication, and handles
   runner lifecycle operations.
-  
+
   ## Key components
-  
+
   - `actions-runner`: The official GitHub Actions Runner client (v2.325.0),
     providing the same runtime environment that GitHub uses for self-hosted
     runners. The version is determined by the SDK release, not the base image.
@@ -18,23 +18,23 @@ description: |
   - Tool cache: Persistent storage at `~/actions-runner/_work/_tool` that
     preserves downloaded tools and dependencies across workshop updates,
     avoiding repeated downloads of setup actions like `setup-python`.
-  
+
   The SDK focuses on providing the runner environment itself. GitHub-hosted
   runners include extensive preinstalled software (compilers, databases, various
   language runtimes, etc.), but these are **not** included by default. If your
   workflows require specific tools, install them as part of the workflow (many
   actions like `setup-python` provide caching), or add them as workshop SDKs for
   tools needed during development as well as CI.
-  
+
   ## Setup actions
-  
+
   On launch, the SDK:
-  
+
   - Extracts the official Runner client to `~/actions-runner`.
   - Adds the `github-runner` helper script to `PATH` for easy invocation.
   - Configures the tool cache mount plug to persist downloads from setup actions
     across workshop updates.
-  
+
   No runner registration or authorization happens automatically; you control when
   to start the runner and which repository or organization it connects to.
 license: MIT
@@ -47,6 +47,7 @@ parts:
     plugin: nil
     build-packages:
       - libicu-dev
+      - git
     override-pull: |
       VERSION=$(cat "$CRAFT_PROJECT_DIR/VERSION")
       craftctl set version="$VERSION"
