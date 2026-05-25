@@ -39,6 +39,7 @@ description: |
   to start the runner and which repository or organization it connects to.
 license: MIT
 platforms:
+  ubuntu@26.04:amd64:
   ubuntu@24.04:amd64:
   ubuntu@22.04:amd64:
 
