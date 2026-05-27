@@ -16,8 +16,8 @@ import (
 	"github.com/canonical/sdks/github-runner/24.04/internal/oauth2w"
 )
 
-const clientID = "Iv23liePVCCGpWdMJNXb"
-const appURL = "https://github.com/apps/test-app-jonathan-conder-1"
+const clientID = "Iv23liTDRAG9hbRN13UN"
+const appURL = "https://github.com/apps/runner-sdk-for-workshop"
 
 func (c *repoConfig) oauthClient(ctx context.Context, std stdio) (*http.Client, error) {
 	client := &http.Client{Timeout: 10 * time.Second}
