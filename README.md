@@ -207,14 +207,14 @@ This SDK doesn't define any slots.
 - [Self-hosted runners](https://docs.github.com/en/actions/hosting-your-own-runners/managing-self-hosted-runners/about-self-hosted-runners)
 - [Just-in-time runners](https://docs.github.com/en/actions/security-for-github-actions/security-guides/security-hardening-for-github-actions#using-just-in-time-runners)
 - [Official Runner repository](https://github.com/actions/runner)
-- [Workshop documentation](https://canonical-workshop.readthedocs-hosted.com/latest/)
+- [Workshop documentation](https://ubuntu.com/workshop/docs/)
 
 ---
 
 ## Community and support
 
 - GitHub Actions community: [GitHub Community Discussions](https://github.com/orgs/community/discussions/categories/actions)
-- Workshop forum: [Workshop Discourse](https://discourse.canonical.com/c/engineering/workshops/34)
+- Workshop forum: [Discourse](https://discourse.ubuntu.com/)
 - Please review our [Code of Conduct](https://ubuntu.com/community/ethos/code-of-conduct) before participating.
 
 ---

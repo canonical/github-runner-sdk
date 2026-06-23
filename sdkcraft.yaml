@@ -38,7 +38,9 @@ description: |
   No runner registration or authorization happens automatically; you control when
   to start the runner and which repository or organization it connects to.
 license: MIT
+website: https://github.com/canonical/github-runner-sdk
 platforms:
+  ubuntu@26.04:amd64:
   ubuntu@24.04:amd64:
   ubuntu@22.04:amd64:
 
