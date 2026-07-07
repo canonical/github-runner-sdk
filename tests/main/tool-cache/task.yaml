@@ -9,7 +9,9 @@ restore: |
 
 execute: |
   workshop exec -- test -d /home/workshop/actions-runner/_work/_tool
-  workshop exec -- bash -lc 'echo sdk-tool-cache > /home/workshop/actions-runner/_work/_tool/sdk-test-marker'
+  workshop exec -- tee /home/workshop/actions-runner/_work/_tool/sdk-test-marker >/dev/null <<'EOF'
+  sdk-tool-cache
+  EOF
   workshop exec -- grep -F sdk-tool-cache /home/workshop/actions-runner/_work/_tool/sdk-test-marker
 
 debug: |
