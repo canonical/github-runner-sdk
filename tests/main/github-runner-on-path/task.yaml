@@ -1,0 +1,19 @@
+summary: Verify the github-runner helper is available on PATH
+
+prepare: |
+  envsubst '${BASE}' <workshop.yaml.in >workshop.yaml
+  workshop launch
+
+restore: |
+  workshop remove || true
+
+execute: |
+  workshop exec -- bash -lc 'command -v github-runner' | MATCH '/github-runner$'
+  workshop exec -- github-runner --help | MATCH 'Create a just-in-time GitHub runner'
+  workshop exec -- github-runner --help | MATCH '  -1, --once'
+
+debug: |
+  workshop exec -- bash -lc 'printf "PATH=%s\n" "${PATH}"' || true
+  workshop exec -- ls -l /etc/profile.d/github-runner.sh || true
+  workshop exec -- cat /etc/profile.d/github-runner.sh || true
+  workshop tasks

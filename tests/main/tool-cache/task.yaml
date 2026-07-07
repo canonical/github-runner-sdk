@@ -1,0 +1,18 @@
+summary: Verify the GitHub Actions tool cache mount target is available
+
+prepare: |
+  envsubst '${BASE}' <workshop.yaml.in >workshop.yaml
+  workshop launch
+
+restore: |
+  workshop remove || true
+
+execute: |
+  workshop exec -- test -d /home/workshop/actions-runner/_work/_tool
+  workshop exec -- bash -lc 'echo sdk-tool-cache > /home/workshop/actions-runner/_work/_tool/sdk-test-marker'
+  workshop exec -- grep -F sdk-tool-cache /home/workshop/actions-runner/_work/_tool/sdk-test-marker
+
+debug: |
+  workshop exec -- ls -la /home/workshop/actions-runner/_work || true
+  workshop exec -- findmnt /home/workshop/actions-runner/_work/_tool || true
+  workshop tasks
