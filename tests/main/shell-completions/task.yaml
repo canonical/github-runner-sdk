@@ -1,0 +1,18 @@
+summary: Verify GitHub Runner SDK shell setup files are installed
+
+prepare: |
+  envsubst '${BASE}' <workshop.yaml.in >workshop.yaml
+  workshop launch
+
+restore: |
+  workshop remove || true
+
+execute: |
+  workshop exec -- grep -F 'export PATH=' /etc/profile.d/github-runner.sh
+  workshop exec -- test -s /etc/bash_completion.d/github-runner
+  workshop exec -- grep -F 'github-runner' /etc/bash_completion.d/github-runner
+
+debug: |
+  workshop exec -- cat /etc/profile.d/github-runner.sh || true
+  workshop exec -- ls -l /etc/bash_completion.d/github-runner || true
+  workshop tasks
