@@ -1,0 +1,18 @@
+summary: Verify the official GitHub Actions runner is installed
+
+prepare: |
+  envsubst '${BASE}' <workshop.yaml.in >workshop.yaml
+  workshop launch
+
+restore: |
+  workshop remove || true
+
+execute: |
+  workshop exec -- test -x /home/workshop/actions-runner/run.sh
+  workshop exec -- test -x /home/workshop/actions-runner/config.sh
+  workshop exec -- test -d /home/workshop/actions-runner/bin
+  workshop exec -- test -d /home/workshop/actions-runner/externals
+
+debug: |
+  workshop exec -- ls -la /home/workshop/actions-runner || true
+  workshop tasks
