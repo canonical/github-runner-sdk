@@ -1,0 +1,18 @@
+project: github-runner
+
+path: /home/ubuntu/project
+
+backends:
+  lxd:
+    systems:
+      - ubuntu-24.04:
+          username: ubuntu
+          vm: true
+
+suites:
+  main/:
+    summary: Test the GitHub Runner SDK inside workshops
+    environment:
+      BASE/jammy: ubuntu@22.04
+      BASE/noble: ubuntu@24.04
+      BASE/resolute: ubuntu@26.04
