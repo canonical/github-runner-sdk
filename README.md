@@ -52,7 +52,7 @@ Workshop team to limit SDK access to only the necessary repositories.
 To grant access:
 
 1. Navigate to the [GitHub App for
-   github-runner](https://github.com/apps/test-app-jonathan-conder-1) and
+   github-runner](https://github.com/apps/runner-sdk-for-workshop) and
    install it.
 2. Configure which repositories or organizations the App can access. This can
    be changed at any time.

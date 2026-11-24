@@ -1,0 +1,4 @@
+name: test-github-runner
+base: ${BASE}
+sdks:
+  - name: try-github-runner
